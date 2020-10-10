@@ -92,124 +92,103 @@ struct supports_arithmetic_operations<T,
 
 namespace color {
 
-template <class T>
-class Color {
- public:
-  constexpr static unsigned int NUM_PIGMENTS = 3;
 
-  std::array<T, NUM_PIGMENTS> pigment;  // a fraction between 0 and 1 OR int [0 - 255]
+template <class T, size_t NUM_VALUES, typename Alpha = void>
+class BaseColor;
+
+template <class T, size_t NUM_VALUES>
+class BaseColor<T, NUM_VALUES, std::enable_if_t<(NUM_VALUES == 4)>> {
+ public:
+  std::array<T, NUM_VALUES> pigment;  // a fraction between 0 and 1 OR int [0 - 255]
+  T &a = pigment[3];
+  static constexpr bool has_alpha = true;
+
+  BaseColor() {
+    if (std::is_floating_point<T>::value) {
+      a = 1;
+    } else {
+      a = 255;
+    }
+  }
+};
+
+template <class T, size_t NUM_VALUES>
+class BaseColor<T, NUM_VALUES, std::enable_if_t<(NUM_VALUES != 4)>> {
+ public:
+  std::array<T, NUM_VALUES> pigment;  // a fraction between 0 and 1 OR int [0 - 255]
+  static constexpr bool has_alpha = false;
+};
+
+
+template <class T, size_t NUM_VALUES = 3>
+class Color : public BaseColor<T, NUM_VALUES> {
 
  protected:
-  Color() {}
-
-  template <class T_>
-  Color(T_ a, T_ b, T_ c) : Color(std::array<T_, NUM_PIGMENTS>{{a, b, c}}) {}
-
-  template <class T_>
-  Color(const std::array<T_, NUM_PIGMENTS> &pigment_) {
-    static_assert(func::supports_arithmetic_operations<T_>::value,
-                  "You cannot initiate a color with given type ");
-
-    if (std::is_same<T_, T>::value) {
-      // pigment[i] = pigment_[i]; // this doesnt work???
-      for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-        pigment[i] = pigment_[i];
-      }
-      // pigment = pigment_;
-    } else if (isFloatingpoint() && std::is_integral<T_>::value) {
-      for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-        pigment[i] = static_cast<T>(pigment_[i]) / 255.0;
-      }
-      // pigment = static_cast<T>(pigment_) / 255.0;
-    } else if (isIntegral() && std::is_floating_point<T_>::value) {
-      for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-        pigment[i] = std::round(pigment_[i] * 255.0);
-      }
-    }
+  Color() {
+    static_assert(NUM_VALUES == 3 || NUM_VALUES == 4,
+                  "The number of values (second template parameter) can only "
+                  "be 3 (without alpha) or 4 (with alpha)");
   }
 
  public:
-  virtual std::string pigmentName(unsigned int) const = 0;
-  virtual std::string getColorTypeName() const = 0;
+  template <class T_, size_t NUM_VALUES_>
+  Color(const std::array<T_, NUM_VALUES_> &pigment_) {
+    static_assert(func::supports_arithmetic_operations<T_>::value,
+                  "You cannot initiate a color with given type ");
+
+    // we either cut a if NUM_VALUES == 3 and NUM_VALUES_ == 4,
+    // or we assume a = 100% if
+    // NUM_VALUES_ == 3 but NUM_VALUES == 4;
+    size_t min = std::min(NUM_VALUES_, NUM_VALUES);
+
+    if (std::is_same<T_, T>::value) {
+      // pigment[i] = pigment_[i]; // this doesnt work???
+      for (unsigned int i = 0; i < min; i++) {
+        this->pigment[i] = pigment_[i];
+      }
+      // pigment = pigment_;
+    } else if (isFloatingpoint() && std::is_integral<T_>::value) {
+      for (unsigned int i = 0; i < min; i++) {
+        this->pigment[i] = static_cast<T>(pigment_[i]) / 255.0;
+      }
+      // pigment = static_cast<T>(pigment_) / 255.0;
+    } else if (isIntegral() && std::is_floating_point<T_>::value) {
+      for (unsigned int i = 0; i < min; i++) {
+        this->pigment[i] = std::round(pigment_[i] * 255.0);
+      }
+    }
+  }
 
   bool isIntegral() const { return std::is_integral<T>::value; }
 
   bool isFloatingpoint() const { return std::is_floating_point<T>::value; }
 
+ public:
+  virtual std::string pigmentName(unsigned int) const = 0;
+  virtual std::string getColorTypeName() const = 0;
+
   friend std::ostream &operator<<(std::ostream &os, const Color &c) {
     os << c.getColorTypeName() << std::endl;
-    for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
+    for (unsigned int i = 0; i < NUM_VALUES; i++) {
       os << "[" << c.pigmentName(i) << ": " << c.pigment[i] << "]";
     }
     os << std::endl;
     return os;
   }
 
-  T &operator[](unsigned int x) { return pigment[x]; }
-
-  /*
-
-  template <class T_>
-  Color(T_ a, T_ b, T_ c) : Color(std::array<T_, NUM_PIGMENTS>{{a, b, c}}) {}
-
-  Color(const std::array<double, NUM_PIGMENTS> &pigment_) {
-    if (std::is_same<T, double>::value) {
-      for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-        pigment[i] = static_cast<T>(pigment_[i]);
-      }
-      // pigment = pigment_;
-    } else if (isFloatingpoint()) {
-      for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-        pigment[i] = static_cast<T>(pigment_[i]) / 255.0;
-      }
-      // pigment = static_cast<T>(pigment_) / 255.0;
-    } else {
-      for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-        pigment[i] = static_cast<T>(pigment_[i]) * 255;
-      }
-    }
-  }
-
-  template <class T_, TYPE def_> Color(const Color<T_, def_> &c) {
-
-    const Color<T, def> temp = c.convert();
-
-    for (unsigned int i = 0; i < NUM_PIGMENTS; i++) {
-      pigment[i] = static_cast<T>(temp.pigment_[i]);
-    }
-
-    // pigment = temp.pigment;
-  }
-
-
-  template <class T_, TYPE def_> Color<T_, def_> convert() const {
-    if (std::is_same<T, T_>::value) {
-      // nothing to convert, maybe type which is done by constructore
-      return Color<T_, def_>(pigment);
-    } else {
-      const Color<T, def> temp(pigment);
-      switch (def_) {
-      case TYPE::HSV:
-        return convertToHSV(temp);
-      case TYPE::RGB:
-        return convertToRGB(temp);
-      }
-    }
-  }
-
-  */
+  T &operator[](unsigned int x) { return this->pigment[x]; }
 };
 
-template <class T>
+template <class T, size_t NUM_VALUES = 3>
 class RGB;
-template <class T>
+template <class T, size_t NUM_VALUES = 3>
 class HSV;
 
 static RGB<double> convertToRGB(const HSV<double> &hsv);
 static HSV<double> convertToHSV(const RGB<double> &rgb);
 
-template <class T>
-class RGB : public Color<T> {
+template <class T, size_t NUM_VALUES>
+class RGB : public Color<T, NUM_VALUES> {
  public:
   // https://isocpp.org/wiki/faq/templates#nondependent-name-lookup-members
   // We need to tell the compiler explicitly that the names are dependent on the
@@ -220,39 +199,41 @@ class RGB : public Color<T> {
   T &g = this->pigment[1];
   T &b = this->pigment[2];
 
-  using Color<T>::NUM_PIGMENTS;  // same problem as above, we need to tell the
-                                 // compiler where the constant comes from
-
   RGB() {}
 
-  template <class T_>
-  RGB(const RGB<T_> &rgb) : Color<T>(rgb.pigment) {}
+  template <class T_, size_t NUM_VALUES_>
+  RGB(const RGB<T_, NUM_VALUES_> &rgb) : Color<T, NUM_VALUES>(rgb.pigment) {}
 
-  template <class T_>
-  RGB(const HSV<T_> &hsv) {
-    const RGB<T> temp = convertToRGB(hsv);
+  template <class T_, size_t NUM_VALUES_>
+  RGB(const HSV<T_, NUM_VALUES_> &hsv) {
+    const RGB<T, NUM_VALUES> temp = convertToRGB(hsv);
     *this = temp;
   }
 
-  template <class T_>
-  RGB(const std::array<T_, NUM_PIGMENTS> &pigments) : Color<T>(pigments) {}
+  template <class T_, size_t NUM_VALUES_>
+  RGB(const std::array<T_, NUM_VALUES_> &pigments)
+      : Color<T, NUM_VALUES>(pigments) {}
 
   template <class T_>
-  RGB(T_ a, T_ b, T_ c) : Color<T>(std::array<T_, NUM_PIGMENTS>{{a, b, c}}) {}
+  RGB(T_ r, T_ g, T_ b) : Color<T, NUM_VALUES>(std::array<T_, 3>{{r, g, b}}){};
 
-  RGB<T> &operator=(const RGB<T> &rgb) {
+  template <class T_>
+  RGB(T_ r, T_ g, T_ b, T_ a)
+      : Color<T, NUM_VALUES>(std::array<T_, 4>{{r, g, b, a}}) {}
+
+  RGB<T, NUM_VALUES> &operator=(const RGB<T, NUM_VALUES> &rgb) {
     if (&rgb == this) {
       return *this;
     }
     // constructor deals with different T
-    const RGB<T> temp(rgb);
-    std::copy(&temp.pigment[0], &temp.pigment[0] + NUM_PIGMENTS, &this->pigment[0]);
+    const RGB<T, NUM_VALUES> temp(rgb);
+    std::copy(&temp.pigment[0], &temp.pigment[0] + NUM_VALUES, &this->pigment[0]);
     return *this;
   }
 
-  template <class T_>
-  RGB<T> &operator=(const HSV<T_> &hsv) {
-    const RGB<T> temp = convertToRGB(hsv);
+  template <class T_, size_t NUM_VALUES_>
+  RGB<T, NUM_VALUES> &operator=(const HSV<T_, NUM_VALUES_> &hsv) {
+    const RGB<T, NUM_VALUES> temp = convertToRGB(hsv);
     *this = temp;
     return *this;
   }
@@ -265,6 +246,11 @@ class RGB : public Color<T> {
         return "G";
       case 2:
         return "B";
+      case 3:
+        if (!this->has_alpha) {
+          assert(("This color has no alpha value!", i == 0 || i == 1 || i == 2));
+        }
+        return "A";
       default:
         assert(("pigmentName only supports i in [0, 1, 2]", i == 0 || i == 1 || i == 2));
         return "?";
@@ -280,45 +266,48 @@ class RGB : public Color<T> {
   }
 };
 
-template <class T>
-class HSV : public Color<T> {
+template <class T, size_t NUM_VALUES>
+class HSV : public Color<T, NUM_VALUES> {
  public:
   T &h = this->pigment[0];
   T &s = this->pigment[1];
   T &v = this->pigment[2];
 
-  using Color<T>::NUM_PIGMENTS;
-
   HSV() {}
 
-  template <class T_>
-  HSV(const HSV<T_> &hsv) : Color<T>(hsv.pigment) {}
+  template <class T_, size_t NUM_VALUES_>
+  HSV(const HSV<T_, NUM_VALUES_> &hsv) : Color<T, NUM_VALUES>(hsv.pigment) {}
 
-  template <class T_>
-  HSV(const RGB<T_> &rgb) {
+  template <class T_, size_t NUM_VALUES_>
+  HSV(const RGB<T_, NUM_VALUES_> &rgb) {
     const HSV<T> temp = convertToHSV(rgb);
     *this = temp;
   }
 
-  template <class T_>
-  HSV(const std::array<T_, NUM_PIGMENTS> &pigments) : Color<T>(pigments) {}
+  template <class T_, size_t NUM_VALUES_>
+  HSV(const std::array<T_, NUM_VALUES_> &pigments)
+      : Color<T, NUM_VALUES>(pigments) {}
 
   template <class T_>
-  HSV(T_ a, T_ b, T_ c) : Color<T>(std::array<T_, NUM_PIGMENTS>{{a, b, c}}) {}
+  HSV(T_ h, T_ s, T_ v) : Color<T, NUM_VALUES>(std::array<T_, 3>{{h, s, v}}) {}
 
-  HSV<T> &operator=(const HSV<T> &hsv) {
+  template <class T_>
+  HSV(T_ h, T_ s, T_ v, T_ a)
+      : Color<T, NUM_VALUES>(std::array<T_, 4>{{h, s, v, a}}) {}
+
+  HSV<T, NUM_VALUES> &operator=(const HSV<T, NUM_VALUES> &hsv) {
     if (&hsv == this) {
       return *this;
     }
     // constructor deals with different T
-    const HSV<T> temp(hsv);
-    std::copy(&temp.pigment[0], &temp.pigment[0] + NUM_PIGMENTS, &this->pigment[0]);
+    const HSV<T, NUM_VALUES> temp(hsv);
+    std::copy(&temp.pigment[0], &temp.pigment[0] + NUM_VALUES, &this->pigment[0]);
     return *this;
   }
 
-  template <class T_>
-  HSV<T> &operator=(const RGB<T_> &rgb) {
-    const HSV<T> temp = convertToHSV(rgb);
+  template <class T_, size_t NUM_VALUES_>
+  HSV<T, NUM_VALUES> &operator=(const RGB<T_, NUM_VALUES_> &rgb) {
+    const HSV<T, NUM_VALUES> temp = convertToHSV(rgb);
     *this = temp;
     return *this;
   }
@@ -331,6 +320,11 @@ class HSV : public Color<T> {
         return "S";
       case 2:
         return "V";
+      case 3:
+        if (!this->has_alpha) {
+          assert(("This color has no alpha value!", i == 0 || i == 1 || i == 2));
+        }
+        return "A";
       default:
         assert(("pigmentName only supports i in [0, 1, 2]", i == 0 || i == 1 || i == 2));
         return "?";
