@@ -57,6 +57,34 @@
   for (unsigned int i = 0; i < 3; i++) {
     std::cout << " Data<" << i << ">:" << rgbii2[i] << std::endl;
   }
+
+  std::cout << "---alpha value---" << std::endl;
+
+  // To add a alpha value to the color, you need
+  // to add 4 as the second template parameter
+  color::RGB<int,4> rgba(22,33,44);
+  std::cout << "The default value is 255 (or 1.), depending on T" <<std::endl;
+  std::cout << rgba << std::endl;
+  std::cout << "You can define a at construction: " <<std::endl;
+  rgba = color::RGB<int,4>(22,33,44,55);
+  std::cout << rgba << std::endl;
+
+  std::cout << "Oh and you can access a also like this: "
+            << "rgba.a = " << rgba.a <<std::endl
+            << "or like this: rgba[3] = " <<  rgba[3] <<std::endl;
+
+  color::RGB<int> rgb(22,33,44);
+
+  // This will fail at compile time:
+  std::cout << rgb.a << std::endl;
+
+  //but this wont! If you are lucky you get a SEGFAULT:
+  std::cout << rgb[3] << std::endl;
+
+
+  // you louse information if you do this:
+  rgb = color::RGB<int>(rgba);
+
 */
 
 #ifndef COLOR_H

@@ -153,11 +153,19 @@ BOOST_AUTO_TEST_CASE(color_test_rgba) {
   BOOST_TEST(hsvad2.a = 1., tt::tolerance(TOLERANCE));
 
 
-  const color::RGB<double, 3> rgbad3(pigments_i2);
-  const color::HSV<double, 3> hsvad3(pigments_i2);
+  const color::RGB<double> rgbd(pigments_i2);
+  const color::HSV<double> hsvd(pigments_i2);
 
   // This throws at compiletime :) unfortunately
   // I can not test for compiletime errors
   // std::cout << rgbad3.a << std::endl;
   // std::cout << hsvad3.a << std::endl,
+
+  // The following shall not throw
+
+  const color::RGB<int, 4> rgbai3(rgbd);
+  color::HSV<double, 3> hsvd3(hsvai);
+
+  std::cout << rgbai.a << std::endl;
+  std::cout << hsvd << std::endl;
 }
