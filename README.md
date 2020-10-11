@@ -7,7 +7,7 @@ I also wanted to try out Boost.Test in combination with CMake, so that exists to
 
 # Build
  - Either use the provided CMakeLists.txt and #include <color.hpp>
- - or just #include "<include/color.hpp>" rellative
+ - or just #include "<include/color.hpp>" (relative path)
  - you can build the example with `g++ example.cpp -o example_executable`
    - Will fail the first time (see comment in example.cpp and fix yourself)
    - execute with `./example_executable`
