@@ -13,3 +13,4 @@ I also wanted to try out Boost.Test in combination with CMake, so that exists to
    - execute with `./example_executable`
  - For the tests go into build `cd build`
  - run script `./buildAndRunTests.sh`
+ - (an installation of Boost (works with 1.65.1) is required for the tests)
