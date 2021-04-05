@@ -9,7 +9,6 @@ link_directories (${Boost_LIBRARY_DIRS})
 find_package(Boost COMPONENTS system unit_test_framework filesystem)
 
 if( Boost_FOUND )
-  enable_testing()
   add_executable(test_color test_color.cpp)
 
   target_link_libraries(test_color
