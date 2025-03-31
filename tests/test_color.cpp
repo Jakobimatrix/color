@@ -2,7 +2,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <cmath>
-#include <color.hpp>
+#include <color/color.hpp>
 
 namespace utf = boost::unit_test;
 namespace tt = boost::test_tools;

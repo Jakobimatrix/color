@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "include/color.hpp"
+#include "include/color/color.hpp"
 
 int main() {
   std::array<int, 3> pigments_i = {{0, 100, 255}};
