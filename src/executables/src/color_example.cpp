@@ -19,19 +19,16 @@ int main() {
 
   // conversion to RGB
   std::cout << hsvi << "to:" << std::endl;
-  std::cout << color::convertToRGB(hsvi);
-  auto x = color::convertToRGB(hsvi);
-  std::cout << color::convertToRGB(hsvd);
-
   color::RGB<double> rgbid{color::convertToRGB(hsvd)};
+  std::cout << color::RGB<int>(rgbid) << std::endl;
 
+  
   std::cout << "---rgb2hsv---" << std::endl;
 
   // conversion to HSV
-  std::cout << x << "to:" << std::endl;
-  std::cout << color::convertToHSV(x);
-  std::cout << color::HSV<int>(color::convertToHSV(x));
-  std::cout << color::convertToHSV(rgbid);
+  std::cout << rgbid << "to:" << std::endl;
+  std::cout << color::convertToHSV(rgbid) << std::endl;
+
 
   std::cout << "---access---" << std::endl;
 

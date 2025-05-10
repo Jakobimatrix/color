@@ -324,11 +324,6 @@ constexpr RGB<double, NUM_VALUES> convertToRGB(const HSV<double, NUM_VALUES> &hs
   return rgb;
 }
 
-template <typename T, size_t NUM_VALUES>
-constexpr RGB<double, NUM_VALUES> convertToRGB(const HSV<T, NUM_VALUES> &hsv){
-  return convertToRGB(HSV<double, NUM_VALUES>(hsv));
-}
-
 // h[0-1], s[0-1], v[0-1] -> r[0-1], g[0-1], b[0-1]
 template <size_t NUM_VALUES>
 static HSV<double, NUM_VALUES> convertToHSV(const RGB<double, NUM_VALUES> &rgb) {
@@ -367,11 +362,6 @@ static HSV<double, NUM_VALUES> convertToHSV(const RGB<double, NUM_VALUES> &rgb) 
     hsv.a() = rgb.a();
   }
   return hsv;
-}
-
-template <typename T, size_t NUM_VALUES>
-static HSV<double, NUM_VALUES> convertToHSV(const RGB<T, NUM_VALUES> &rgb){
-  return convertToHSV(RGB<double, NUM_VALUES>(rgb));
 }
 
 }  // namespace color
