@@ -48,7 +48,6 @@ template <class T, size_t NUM_VALUES>
 class BaseColor<T, NUM_VALUES, std::enable_if_t<(NUM_VALUES == 4)>> {
  public:
   std::array<T, NUM_VALUES> pigment;  // a fraction between 0 and 1 OR int [0 - 255]
-  static constexpr bool has_alpha = true;
 
   constexpr T a() const { return this->pigment[3]; }
   constexpr T &a() { return this->pigment[3]; }
@@ -66,7 +65,6 @@ template <class T, size_t NUM_VALUES>
 class BaseColor<T, NUM_VALUES, std::enable_if_t<(NUM_VALUES != 4)>> {
  public:
   std::array<T, NUM_VALUES> pigment;  // a fraction between 0 and 1 OR int [0 - 255]
-  static constexpr bool has_alpha = false;
 };
 
 
@@ -144,6 +142,8 @@ template <class T, size_t NUM_VALUES=3>
 class RGB : public Color<T, NUM_VALUES> {
  public:
 
+  constexpr static bool has_alpha = (NUM_VALUES == 4);
+
   constexpr RGB() {}
   constexpr RGB(const RGB &rgb) = default;
   constexpr RGB(RGB &&rgb) = default;
@@ -196,7 +196,7 @@ class RGB : public Color<T, NUM_VALUES> {
       case 2U:
         return "B";
       case 3U:
-        if (!this->has_alpha) {
+        if (!has_alpha) {
           assert(("This color has no alpha value!", i == 0 || i == 1 || i == 2));
         }
         return "A";
@@ -207,7 +207,7 @@ class RGB : public Color<T, NUM_VALUES> {
   }
 
   std::string getColorTypeName() const override {
-    if constexpr (this->has_alpha) {
+    if constexpr (has_alpha) {
       return "RGBA";
     }else{
       return "RGB";
@@ -218,6 +218,8 @@ class RGB : public Color<T, NUM_VALUES> {
 template <class T, size_t NUM_VALUES=3>
 class HSV : public Color<T, NUM_VALUES> {
  public:
+
+  constexpr static bool has_alpha = (NUM_VALUES == 4);
 
   constexpr HSV() {}
   constexpr HSV(const HSV &hsv) = default;
@@ -263,7 +265,7 @@ class HSV : public Color<T, NUM_VALUES> {
       case 2U:
         return "V";
       case 3U:
-        if (!this->has_alpha) {
+        if (!has_alpha) {
           assert(("This color has no alpha value!", i == 0 || i == 1 || i == 2));
         }
         return "A";
@@ -283,7 +285,7 @@ class HSV : public Color<T, NUM_VALUES> {
 
 
   std::string getColorTypeName() const override {
-    if constexpr (this->has_alpha) {
+    if constexpr (has_alpha) {
       return "HSVA";
     }else{
       return "HSV";

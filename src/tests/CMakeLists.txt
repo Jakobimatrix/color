@@ -1,4 +1,3 @@
-
 if (NOT FUZZER_ENABLED)
 
   # only enable other executables, if Fuzzer is not linked. Fuzzer brings its own main!
@@ -27,6 +26,5 @@ if (NOT FUZZER_ENABLED)
   include(Catch)
 
   catch_discover_tests(test_color)
-
 
 endif()
