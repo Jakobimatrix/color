@@ -33,11 +33,6 @@ endif()
 
 enable_testing()
 
-# include_eigen(${ENVIRONMENT_SETTINGS})
-# include_qt5(${ENVIRONMENT_SETTINGS})
-# include_open_cv(${ENVIRONMENT_SETTINGS})
-# include_unit_testing(${ENVIRONMENT_SETTINGS})
-
 add_subdirectory(src/color)
 add_subdirectory(src/executables)
 add_subdirectory(src/tests)
