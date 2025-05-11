@@ -53,8 +53,8 @@ inline bool badFunction(const unsigned char* data, size_t size) {
     color::HSV<int, 4> hsva(r, g, b, a);
 
     // Convert between RGB and HSV
-    color::HSV<double> hsv_from_rgb(rgb);
-    color::RGB<double> rgb_from_hsv(hsv);
+    color::HSV<double> hsv_from_rgb(color::convertToHSV(color::RGB<double>(rgb)));
+    color::RGB<double> rgb_from_hsv(color::convertToRGB(color::HSV<double>(hsv)));
 
     // Output to ensure no exceptions are thrown
     std::cout << "Integer-based colors:" << std::endl;
@@ -87,8 +87,8 @@ inline bool badFunction(const unsigned char* data, size_t size) {
     color::HSV<float, 4> hsva(r, g, b, a);
 
     // Convert between RGB and HSV
-    color::HSV<double> hsv_from_rgb(rgb);
-    color::RGB<double> rgb_from_hsv(hsv);
+    color::HSV<double> hsv_from_rgb(color::convertToHSV(color::RGB<double>(rgb)));
+    color::RGB<double> rgb_from_hsv(color::convertToRGB(color::HSV<double>(hsv)));
 
     // Output to ensure no exceptions are thrown
     std::cout << "Float-based colors:" << std::endl;

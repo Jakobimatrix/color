@@ -2,9 +2,9 @@
 
 if (FUZZER_ENABLED)
 
-  add_executable(fuzzer_example src/fuzzer_example.cpp)
+  add_executable(fuzzer_color src/fuzz_color_class.cpp)
 
-  target_link_libraries(fuzzer_example 
+  target_link_libraries(fuzzer_color 
     PRIVATE 
     color_lib_0.0.1
     ${ENVIRONMENT_SETTINGS}
