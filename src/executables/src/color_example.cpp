@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main() {
-  std::array<int, 3> pigments_i = {{0, 100, 255}};
+  std::array<int, 3> pigments_i    = {{0, 100, 255}};
   std::array<double, 3> pigments_d = {{0., 0.3921568627, 1.}};
 
   // initiation with array or 3 single numbers in order h,s,v
@@ -22,7 +22,7 @@ int main() {
   color::RGB<double> rgbid{color::convertToRGB(hsvd)};
   std::cout << color::RGB<int>(rgbid) << std::endl;
 
-  
+
   std::cout << "---rgb2hsv---" << std::endl;
 
   // conversion to HSV
