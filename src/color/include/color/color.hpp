@@ -198,11 +198,13 @@ class RGB : public Color<T, NUM_VALUES> {
         return "B";
       case 3U:
         if (!has_alpha) {
-          assert(("This color has no alpha value!", i == 0 || i == 1 || i == 2));
+          assert((i == 0 || i == 1 || i == 2) &&
+                 "This color has no alpha value!");
         }
         return "A";
       default:
-        assert(("pigmentName only supports i in [0, 1, 2]", i == 0 || i == 1 || i == 2));
+        assert((i == 0 || i == 1 || i == 2) &&
+               "pigmentName only supports i in [0, 1, 2]");
         return "?";
     }
   }
@@ -268,11 +270,13 @@ class HSV : public Color<T, NUM_VALUES> {
         return "V";
       case 3U:
         if (!has_alpha) {
-          assert(("This color has no alpha value!", i == 0 || i == 1 || i == 2));
+          assert((i == 0 || i == 1 || i == 2) &&
+                 "This color has no alpha value!");
         }
         return "A";
       default:
-        assert(("pigmentName only supports i in [0, 1, 2]", i == 0 || i == 1 || i == 2));
+        assert((i == 0 || i == 1 || i == 2) &&
+               "pigmentName only supports i in [0, 1, 2]");
         return "?";
     }
   }
