@@ -14,13 +14,12 @@
  * @version 1.0
  **/
 
+#include <color/color.hpp>
 #include <concepts>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <vector>
-
-#include <color/color.hpp>
 
 /**
  * @brief This bad function is delibritly wrong.
@@ -167,6 +166,10 @@ int main(int argc, char* argv[]) {
   try {
     auto data = readFileBinary<unsigned char>(file_path);
     printf("\nFile found and read. Now attach debugger and press enter.\n");
+    printf(
+      "If you get an error from ptrace 'Could not attach to the process.' "
+      "Use 'echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope' to relax "
+      "restrictions temporarily.\n");
     getchar();
     return static_cast<int>(badFunction(data.data(), data.size()));
   } catch (const std::exception& e) {
