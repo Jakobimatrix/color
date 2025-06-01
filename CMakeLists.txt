@@ -28,7 +28,8 @@ if (NOT DEFINED PROJECT_NAME)
     include(initRepo/cmake/ClangFuzzyTests.cmake)
 endif()
 
-enable_testing()
+# ===== CTest with Catch2 =====
+setup_catch2_and_ctest()
 
 add_subdirectory(src/color)
 add_subdirectory(src/executables)
