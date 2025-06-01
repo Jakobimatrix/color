@@ -6,7 +6,7 @@ if (FUZZER_ENABLED)
 
   target_link_libraries(fuzzer_color 
     PRIVATE 
-    color_lib_0.0.1
+    color_lib_1.0.0
     ${ENVIRONMENT_SETTINGS}
   )
 
@@ -20,7 +20,7 @@ else()
 
   target_link_libraries(color_example 
     PRIVATE
-    color_lib_0.0.1
+    color_lib_1.0.0
     ${ENVIRONMENT_SETTINGS}
   ) 
 

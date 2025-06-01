@@ -18,7 +18,7 @@ if (NOT FUZZER_ENABLED)
   target_link_libraries(test_color 
     PRIVATE
     Catch2::Catch2WithMain
-    color_lib_0.0.1
+    color_lib_1.0.0
     ${ENVIRONMENT_SETTINGS}
     )
 
