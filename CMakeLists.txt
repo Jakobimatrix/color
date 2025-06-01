@@ -26,10 +26,12 @@ if (NOT DEFINED PROJECT_NAME)
 
     # ===== Fuzzing =====
     include(initRepo/cmake/ClangFuzzyTests.cmake)
+
+    # ===== CTest with Catch2 =====
+    enable_testing()
+    setup_catch2_and_ctest()
 endif()
 
-# ===== CTest with Catch2 =====
-setup_catch2_and_ctest()
 
 add_subdirectory(src/color)
 add_subdirectory(src/executables)
