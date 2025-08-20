@@ -1,12 +1,17 @@
+#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <color/color.hpp>
+#include <cstdlib>
+#include <iostream>
+#include <ostream>
 
 TEST_CASE("color_test_float_int_conversation") {
   constexpr double TOLERANCE = 0.00001;
 
-  for (int i = 0; i < 255; i++) {
-    const std::array<int, 4> pigments_i = {{i, i, i, i}};
+  constexpr int MAX_INTENSITY = 255;
+  for (int byteValue = 0; byteValue < MAX_INTENSITY; ++byteValue) {
+    const std::array<int, 4> pigments_i = {{byteValue, byteValue, byteValue, byteValue}};
 
     const color::HSV<int, 4> hsvi(pigments_i);
     const color::RGB<int, 4> rgbi(pigments_i);
@@ -44,9 +49,11 @@ TEST_CASE("color_test_float_int_conversation") {
 
 TEST_CASE("color_init_wrong_type") {
   constexpr double TOLERANCE          = 0.00001;
-  const std::array<int, 4> pigments_i = {{200, 200, 200, 200}};
+  const std::array<int, 4> pigments_i = {
+    {200, 200, 200, 200}};  // NOLINT (readability-magic-numbers) // yes these are random numbers without meaning
 
-  double result_expected = 200. / 255.;
+  double const result_expected =
+    200. / 255.;  // NOLINT (readability-magic-numbers) // yes these are random numbers without meaning
 
   const color::HSV<double, 4> hsvd(pigments_i);
   const color::RGB<double, 4> rgbd(pigments_i);
@@ -65,10 +72,14 @@ TEST_CASE("color_init_wrong_type") {
 TEST_CASE("color_test_hsv_rgb_conversation") {
   constexpr double TOLERANCE = 0.0001;
 
-  for (int i = 0; i < 255; ++i) {
-    double d                               = static_cast<double>(i) / 255.;
-    const std::array<int, 3> pigments_i    = {{i, i, i}};
-    const std::array<double, 3> pigments_d = {{d, d, d}};
+  constexpr int MAX_INTENSITY = 255;
+
+  for (int byteValue = 0; byteValue < MAX_INTENSITY; ++byteValue) {
+    const double normalyzedByteValue =
+      static_cast<double>(byteValue) / static_cast<double>(MAX_INTENSITY);
+    const std::array<int, 3> pigments_i = {{byteValue, byteValue, byteValue}};
+    const std::array<double, 3> pigments_d = {
+      {normalyzedByteValue, normalyzedByteValue, normalyzedByteValue}};
 
     const color::HSV<int> hsvi(pigments_i);
     const color::HSV<double> hsvid(hsvi);
@@ -106,6 +117,7 @@ TEST_CASE("color_test_hsv_rgb_conversation") {
 TEST_CASE("color_test_rgba") {
   constexpr double TOLERANCE = 0.0001;
 
+  // NOLINTBEGIN(readability-magic-numbers) // yes these are random numbers without meaning
   const std::array<int, 4> pigments_i = {{34, 44, 67, 50}};
 
   const color::RGB<int, 4> rgbai(pigments_i);
@@ -115,10 +127,10 @@ TEST_CASE("color_test_rgba") {
   const color::HSV<double, 4> hsvad(pigments_i);
 
   // this shall not throw
-  REQUIRE_NOTHROW(std::cout << rgbai.a() << std::endl);
-  REQUIRE_NOTHROW(std::cout << hsvai.a() << std::endl);
-  REQUIRE_NOTHROW(std::cout << rgbad.a() << std::endl);
-  REQUIRE_NOTHROW(std::cout << hsvad.a() << std::endl);
+  REQUIRE_NOTHROW(std::cout << rgbai.a() << '\n');
+  REQUIRE_NOTHROW(std::cout << hsvai.a() << '\n');
+  REQUIRE_NOTHROW(std::cout << rgbad.a() << '\n');
+  REQUIRE_NOTHROW(std::cout << hsvad.a() << '\n');
 
   const color::RGB<int, 4> rgbai2(pigments_i);
   const color::HSV<int, 4> hsvai2(pigments_i);
@@ -134,8 +146,8 @@ TEST_CASE("color_test_rgba") {
 
   const color::HSV<double, 4> hsvd;
 
-  REQUIRE_NOTHROW(std::cout << rgbai.a() << std::endl);
-  REQUIRE_NOTHROW(std::cout << hsvd << std::endl);
+  REQUIRE_NOTHROW(std::cout << rgbai.a() << '\n');
+  REQUIRE_NOTHROW(std::cout << hsvd << '\n');
 
   // default alpha is 100%
   REQUIRE(rgbai2.a() == 50);  // copied from pigments_i
@@ -143,4 +155,5 @@ TEST_CASE("color_test_rgba") {
 
   // default alpha is 100%
   REQUIRE(hsvd.a() == Catch::Approx(1.).epsilon(TOLERANCE));
+  // NOLINTEND(readability-magic-numbers)
 }

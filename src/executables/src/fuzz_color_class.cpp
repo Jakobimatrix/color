@@ -15,90 +15,96 @@
  **/
 
 #include <color/color.hpp>
+
+
 #include <concepts>
+#include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <cstdio>
+#include <cstdint>
+#include <stdexcept>
 #include <vector>
 
+namespace {
+template <typename T>
+  requires std::is_trivially_copyable_v<T>
+constexpr T read(const unsigned char* data, size_t* offset) {
+  T value{};
+  std::memcpy(&value, data + *offset, sizeof(T));  // NOLINT (cppcoreguidelines-pro-bounds-pointer-arithmetic) I get raw data... SO I have to deal with that.
+  *offset += sizeof(T);
+  return value;
+}
+
 /**
- * @brief This bad function is delibritly wrong.
- * If the given data is of size 3 and equals "FUZ" we have an access violation.
+ * @brief This bad function initializes different color classes with the given bits and checks if any given bits could crash the methods of the class.
  *
  * @param data Pointer to data begin.
  * @param size Size of the Data.
- * @return true if the input starts with "FUZZ".
+ * @return true if we get the right size for the data.
  */
-inline bool badFunction(const unsigned char* data, size_t size) {
-  if (size < 16) {  // Ensure enough data for both integer and float interpretations
+constexpr bool badFunction(const unsigned char* data, size_t size) {
+  constexpr size_t NUM_BYTES_4_4_INTS   = 16;
+  constexpr size_t NUM_BYTES_4_4_FLOATS = 16;
+  if (size != NUM_BYTES_4_4_INTS + NUM_BYTES_4_4_FLOATS) {  // Ensure enough data for both integer and float interpretations
     return false;  // Not enough data to proceed
   }
-
-  try {
-    // Interpret the first 4 bytes as integers for pigments
-    int r = static_cast<int>(data[0]) | (static_cast<int>(data[1]) << 8) |
-            (static_cast<int>(data[2]) << 16) | (static_cast<int>(data[3]) << 24);
-    int g = static_cast<int>(data[4]) | (static_cast<int>(data[5]) << 8) |
-            (static_cast<int>(data[6]) << 16) | (static_cast<int>(data[7]) << 24);
-    int b = static_cast<int>(data[8]) | (static_cast<int>(data[9]) << 8) |
-            (static_cast<int>(data[10]) << 16) | (static_cast<int>(data[11]) << 24);
-    int a = static_cast<int>(data[12]) | (static_cast<int>(data[13]) << 8) |
-            (static_cast<int>(data[14]) << 16) | (static_cast<int>(data[15]) << 24);
+  size_t offset = 0;
+  {
+    // Interpret the first bytes as integers for pigments
+    const int r = read<int32_t>(data, &offset);
+    const int g = read<int32_t>(data, &offset);
+    const int b = read<int32_t>(data, &offset);
+    const int a = read<int32_t>(data, &offset);
 
     // Construct RGB and HSV objects with integer values
-    color::RGB<int> rgb(r, g, b);
-    color::RGB<int, 4> rgba(r, g, b, a);
-    color::HSV<int> hsv(r, g, b);  // Interpreting r, g, b as h, s, v
-    color::HSV<int, 4> hsva(r, g, b, a);
+    const color::RGB<int> rgb(r, g, b);
+    const color::RGB<int, 4> rgba(r, g, b, a);
+    const color::HSV<int> hsv(r, g, b);  // Interpreting r, g, b as h, s, v
+    const color::HSV<int, 4> hsva(r, g, b, a);
 
     // Convert between RGB and HSV
-    color::HSV<double> hsv_from_rgb(color::convertToHSV(color::RGB<double>(rgb)));
-    color::RGB<double> rgb_from_hsv(color::convertToRGB(color::HSV<double>(hsv)));
+    const color::HSV<double> hsv_from_rgb(color::convertToHSV(color::RGB<double>(rgb)));
+    const color::RGB<double> rgb_from_hsv(color::convertToRGB(color::HSV<double>(hsv)));
 
     // Output to ensure no exceptions are thrown
-    std::cout << "Integer-based colors:" << std::endl;
-    std::cout << rgb << std::endl;
-    std::cout << rgba << std::endl;
-    std::cout << hsv << std::endl;
-    std::cout << hsva << std::endl;
-
-  } catch (const std::exception& e) {
-    std::cerr << "Exception caught during integer interpretation: " << e.what()
-              << std::endl;
-    return false;
+    std::cout << "Integer-based colors:\n";
+    std::cout << rgb << "\n";
+    std::cout << rgba << "\n";
+    std::cout << hsv << "\n";
+    std::cout << hsva << "\n";
   }
 
-  if (size < 32) {  // Ensure enough data for float interpretation
-    return true;    // Skip float interpretation if not enough data
-  }
 
-  try {
-    // Interpret the next 16 bytes as floats for pigments
-    float r = *reinterpret_cast<const float*>(&data[16]);
-    float g = *reinterpret_cast<const float*>(&data[20]);
-    float b = *reinterpret_cast<const float*>(&data[24]);
-    float a = *reinterpret_cast<const float*>(&data[28]);
+  {
+    // Interpret the next bytes as floats for pigments
+    const float r = read<float>(data, &offset);
+    const float g = read<float>(data, &offset);
+    const float b = read<float>(data, &offset);
+    const float a = read<float>(data, &offset);
 
     // Construct RGB and HSV objects with float values
-    color::RGB<float> rgb(r, g, b);
-    color::RGB<float, 4> rgba(r, g, b, a);
-    color::HSV<float> hsv(r, g, b);  // Interpreting r, g, b as h, s, v
-    color::HSV<float, 4> hsva(r, g, b, a);
+    const color::RGB<float> rgb(r, g, b);
+    const color::RGB<float, 4> rgba(r, g, b, a);
+    const color::HSV<float> hsv(r, g, b);  // Interpreting r, g, b as h, s, v
+    const color::HSV<float, 4> hsva(r, g, b, a);
 
     // Convert between RGB and HSV
-    color::HSV<double> hsv_from_rgb(color::convertToHSV(color::RGB<double>(rgb)));
-    color::RGB<double> rgb_from_hsv(color::convertToRGB(color::HSV<double>(hsv)));
+    const color::HSV<double> hsv_from_rgb(color::convertToHSV(color::RGB<double>(rgb)));
+    const color::RGB<double> rgb_from_hsv(color::convertToRGB(color::HSV<double>(hsv)));
 
     // Output to ensure no exceptions are thrown
-    std::cout << "Float-based colors:" << std::endl;
-    std::cout << rgb << std::endl;
-    std::cout << rgba << std::endl;
-    std::cout << hsv << std::endl;
-    std::cout << hsva << std::endl;
-
-  } catch (const std::exception& e) {
-    std::cerr << "Exception caught during float interpretation: " << e.what() << std::endl;
-    return false;
+    std::cout << "Float-based colors:\n";
+    std::cout << rgb << "\n";
+    ;
+    std::cout << rgba << "\n";
+    ;
+    std::cout << hsv << "\n";
+    ;
+    std::cout << hsva << "\n";
+    ;
   }
 
   return true;
@@ -125,16 +131,19 @@ std::vector<ByteType> readFileBinary(const std::filesystem::path& path) {
     throw std::runtime_error("Failed to open file: " + path.string());
   }
 
-  std::streamsize size = file.tellg();
+  const std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);
 
   std::vector<ByteType> buffer(static_cast<size_t>(size));
-  if (!file.read(reinterpret_cast<char*>(buffer.data()), size)) {
+  if (!file.read(reinterpret_cast<char*>(buffer.data()),
+                 size)) {  // NOLINT (cppcoreguidelines-pro-type-reinterpret-cast) chill. I say that is ok
     throw std::runtime_error("Failed to read file: " + path.string());
   }
 
   return buffer;
 }
+
+}  // namespace
 
 
 #if FUZZER_ACTIVE
@@ -152,11 +161,13 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, unsigned long s
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    std::cerr << "Usage: " << argv[0] << " <file_path>\n";
+    std::cerr << "Usage: " << argv[0]
+              << " <file_path>\n";  // NOLINT (cppcoreguidelines-pro-bounds-pointer-arithmetic) That is, how its done
     return 1;
   }
 
-  std::filesystem::path file_path(argv[1]);
+  std::filesystem::path file_path(
+    argv[1]);  // NOLINT (cppcoreguidelines-pro-bounds-pointer-arithmetic) That is, how its done
 
   if (!std::filesystem::exists(file_path)) {
     std::cerr << "File does not exist: " << file_path << "\n";
@@ -165,11 +176,13 @@ int main(int argc, char* argv[]) {
 
   try {
     auto data = readFileBinary<unsigned char>(file_path);
-    printf("\nFile found and read. Now attach debugger and press enter.\n");
-    printf(
-      "If you get an error from ptrace 'Could not attach to the process.' "
-      "Use 'echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope' to relax "
-      "restrictions temporarily.\n");
+    std::cout
+      << "\nFile found and read. Now attach debugger and press enter.\n";
+    std::cout
+      << "If you get an error from ptrace 'Could not attach to the process.' "
+         "Use 'echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope' to relax "
+         "restrictions temporarily.\n"
+      << std::flush;
     getchar();
     return static_cast<int>(badFunction(data.data(), data.size()));
   } catch (const std::exception& e) {
