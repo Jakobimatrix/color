@@ -26,7 +26,16 @@
 #include <cstdio>
 #include <cstdint>
 #include <stdexcept>
+#include <type_traits>
 #include <vector>
+
+// Concept must be outside the anonymous namespace for C++20
+
+template <typename ByteType>
+concept ByteTypeAllowed =
+  !std::is_const_v<ByteType> &&
+  (std::same_as<ByteType, char> || std::same_as<ByteType, unsigned char> ||
+   std::same_as<ByteType, signed char> || std::same_as<ByteType, std::uint8_t>);
 
 namespace {
 template <typename T>
@@ -98,13 +107,9 @@ constexpr bool badFunction(const unsigned char* data, size_t size) {
     // Output to ensure no exceptions are thrown
     std::cout << "Float-based colors:\n";
     std::cout << rgb << "\n";
-    ;
     std::cout << rgba << "\n";
-    ;
     std::cout << hsv << "\n";
-    ;
     std::cout << hsva << "\n";
-    ;
   }
 
   return true;
@@ -119,11 +124,6 @@ constexpr bool badFunction(const unsigned char* data, size_t size) {
  * @throws std::runtime_error if the file can't be opened.
  */
 
-template <typename ByteType>
-concept ByteTypeAllowed =
-  !std::is_const_v<ByteType> &&
-  (std::same_as<ByteType, char> || std::same_as<ByteType, unsigned char> ||
-   std::same_as<ByteType, signed char> || std::same_as<ByteType, std::uint8_t>);
 template <ByteTypeAllowed ByteType>
 std::vector<ByteType> readFileBinary(const std::filesystem::path& path) {
   std::ifstream file(path, std::ios::binary | std::ios::ate);
@@ -134,12 +134,17 @@ std::vector<ByteType> readFileBinary(const std::filesystem::path& path) {
   const std::streamsize size = file.tellg();
   file.seekg(0, std::ios::beg);
 
-  std::vector<ByteType> buffer(static_cast<size_t>(size));
-  if (!file.read(reinterpret_cast<char*>(buffer.data()),
-                 size)) {  // NOLINT (cppcoreguidelines-pro-type-reinterpret-cast) chill. I say that is ok
+  std::vector<char> tempBuffer(static_cast<size_t>(size));
+  if (!file.read(tempBuffer.data(), size)) {
     throw std::runtime_error("Failed to read file: " + path.string());
   }
 
+  if constexpr (std::is_same<char, ByteType>()) {
+    return tempBuffer;
+  }
+
+  // Convert/copy to ByteType
+  std::vector<ByteType> buffer(tempBuffer.begin(), tempBuffer.end());
   return buffer;
 }
 
@@ -161,13 +166,12 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, unsigned long s
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    std::cerr << "Usage: " << argv[0]
-              << " <file_path>\n";  // NOLINT (cppcoreguidelines-pro-bounds-pointer-arithmetic) That is, how its done
+    std::cerr << "Usage: " << argv[0]  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) Thats how its done unfortunately
+              << " <file_path>\n";
     return 1;
   }
 
-  std::filesystem::path file_path(
-    argv[1]);  // NOLINT (cppcoreguidelines-pro-bounds-pointer-arithmetic) That is, how its done
+  const std::filesystem::path file_path(argv[1]);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) Thats how its done unfortunately
 
   if (!std::filesystem::exists(file_path)) {
     std::cerr << "File does not exist: " << file_path << "\n";
