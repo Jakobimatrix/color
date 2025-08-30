@@ -1,3 +1,11 @@
+/**
+ * @file color_example.cpp
+ * @brief Entry point for executable demonstrating the color class.
+ * @date 30.08.2025
+ * @author Jakob Wandel
+ * @version 1.0
+ **/
+
 #include <array>
 #include <color/color.hpp>
 

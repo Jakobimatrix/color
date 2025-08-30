@@ -1,3 +1,11 @@
+/**
+ * @file test_color.cpp
+ * @brief Unit Tests using Catch2 for the color::HSV and color::RGB class
+ * @date 30.08.2025
+ * @author Jakob Wandel
+ * @version 1.0
+ **/
+
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
