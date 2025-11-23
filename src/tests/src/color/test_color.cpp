@@ -11,8 +11,9 @@
 
 #include <color/color.hpp>
 
-#include <cstdlib>
 #include <array>
+#include <cstdlib>
+#include <iostream>
 
 
 TEST_CASE("color_test_float_int_conversation") {
@@ -135,7 +136,6 @@ TEST_CASE("color_test_rgba") {
   const color::RGB<double, 4> rgbad(pigments_i);
   const color::HSV<double, 4> hsvad(pigments_i);
 
-  // this shall not throw
   REQUIRE_NOTHROW(std::cout << rgbai.a() << '\n');
   REQUIRE_NOTHROW(std::cout << hsvai.a() << '\n');
   REQUIRE_NOTHROW(std::cout << rgbad.a() << '\n');
