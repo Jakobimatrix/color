@@ -6,13 +6,14 @@
  * @version 1.0
  **/
 
-#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+
 #include <color/color.hpp>
+
 #include <cstdlib>
-#include <iostream>
-#include <ostream>
+#include <array>
+
 
 TEST_CASE("color_test_float_int_conversation") {
   constexpr double TOLERANCE = 0.00001;

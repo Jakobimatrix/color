@@ -131,24 +131,34 @@ std::vector<ByteType> readFileBinary(const std::filesystem::path& path) {
     throw std::runtime_error("Failed to open file: " + path.string());
   }
 
-  const std::streamsize size = file.tellg();
+  const std::streampos size = file.tellg();
+
+  if (size < 0) {
+    throw std::runtime_error("Failed to determine file size: " + path.string());
+  }
+  if (static_cast<uintmax_t>(size) > std::numeric_limits<size_t>::max()) {
+    throw std::runtime_error("File too large to fit in memory: " + path.string());
+  }
+
   file.seekg(0, std::ios::beg);
-
-  std::vector<char> tempBuffer(static_cast<size_t>(size));
-  if (!file.read(tempBuffer.data(), size)) {
-    throw std::runtime_error("Failed to read file: " + path.string());
-  }
-
+  std::vector<ByteType> buffer(static_cast<size_t>(size));
   if constexpr (std::is_same<char, ByteType>()) {
-    return tempBuffer;
+    if (!file.read(buffer.data(), size)) {
+      throw std::runtime_error("Failed to read file: " + path.string());
+    }
+  } else {
+    if (!file.read(reinterpret_cast<char*>(buffer.data()),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+                   static_cast<std::streamsize>(size))) {
+      // reinterpret_cast is required: std::ifstream::read takes char*,
+      // and buffer.data() may be uint8_t* / unsigned char*, etc. This cast is safe and idiomatic.
+      throw std::runtime_error("Failed to read file: " + path.string());
+    }
   }
 
-  // Convert/copy to ByteType
-  std::vector<ByteType> buffer(tempBuffer.begin(), tempBuffer.end());
   return buffer;
 }
 
-}  // namespace
+}  // end anonymous namespace
 
 
 #if FUZZER_ACTIVE
