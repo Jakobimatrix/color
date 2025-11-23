@@ -17,14 +17,16 @@
 #include <color/color.hpp>
 
 
+// NOLINTBEGIN (misc-include-cleaner) Due to the compiler switch we might need different includes
 #include <concepts>
-#include <cstring>
+#include <cstdint>
+#include <cstdio>
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <ios>
 #include <iostream>
-#include <cstdio>
-#include <cstdint>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -209,3 +211,5 @@ int main(int argc, char* argv[]) {
 
 
 #endif
+
+// NOLINTEND (misc-include-cleaner)
