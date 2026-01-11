@@ -12,23 +12,10 @@
 
 #include <color/color.hpp>
 
-
-// NOLINTBEGIN (misc-include-cleaner) Due to the compiler switch we might need different includes
-#include <concepts>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <exception>
-#include <filesystem>
-#include <fstream>
-#include <ios>
 #include <iostream>
-#include <limits>
-#include <stdexcept>
-#include <type_traits>
-#include <vector>
-
-
 
 namespace {
 template <typename T>
