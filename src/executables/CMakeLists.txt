@@ -2,28 +2,26 @@
 
 if (FUZZER_ENABLED)
 
-  add_executable(fuzzer_color src/fuzz_color_class.cpp)
+  generate_fuzzer_name("fuzzer_color" FUZZER_EXE_NAME)
 
-  target_link_libraries(fuzzer_color 
+  add_executable(${FUZZER_EXE_NAME} src/fuzz_color_class.cpp)
+
+  target_link_libraries(${FUZZER_EXE_NAME} 
     PRIVATE 
     color_lib_1.0.0
-    ${ENVIRONMENT_SETTINGS}
+    BuildSettings_FUZZER
   )
-
-else()
-  # only enable other executables (like tests), if Fuzzer is not linked. Fuzzer brings its own main!
-    
-  add_executable(color_example src/color_example.cpp)
-
-  # Optionally, you can also install the executable
-  install(TARGETS color_example DESTINATION bin)
-
-  target_link_libraries(color_example 
-    PRIVATE
-    color_lib_1.0.0
-    ${ENVIRONMENT_SETTINGS}
-  ) 
-
-
 endif()
+
+add_executable(color_example src/color_example.cpp)
+
+# Optionally, you can also install the executable
+install(TARGETS color_example DESTINATION bin)
+
+target_link_libraries(color_example 
+  PRIVATE
+  color_lib_1.0.0
+  BuildSettings_EXE
+) 
+
 
